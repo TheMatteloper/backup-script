@@ -2,7 +2,6 @@ import os
 import json
 import shutil
 from pathlib import Path
-from functools import reduce
 
 STATE_FILE = "file_state"
 
@@ -66,6 +65,12 @@ def traverse_directory_tree(sdir, last_state_dirs = None, last_state_files = Non
         synchronize_dirs_on_level(root, dirs, sdir, last_state_dirs, dict_dirs)
         synchronize_files_on_level(root, files, sdir, last_state_files, dict_files)
 
+    delete_old_files(last_state_files)
+    delete_old_directories(last_state_dirs)
+
+    return dict_dirs, dict_files
+
+def delete_old_files(last_state_files):
     # Delete old files in backup
     if last_state_files is not None:
         for key in last_state_files:
@@ -73,14 +78,13 @@ def traverse_directory_tree(sdir, last_state_dirs = None, last_state_files = Non
                 print(str(BACKUP_DIR.joinpath(Path(key))) + ' removed')
                 os.remove(BACKUP_DIR.joinpath(Path(key)))
 
+def delete_old_directories(last_state_dirs):
     # Delete old directories in backup
     if last_state_dirs is not None:
         for key in last_state_dirs:
             if last_state_dirs[key] is False:
                 print(str(BACKUP_DIR.joinpath(Path(key))) + ' removed')
                 shutil.rmtree(BACKUP_DIR.joinpath(Path(key)), ignore_errors=True)
-
-    return dict_dirs, dict_files
         
 
 def load_last_state(name):
@@ -92,24 +96,6 @@ def load_last_state(name):
 def save_state(state, name):
     with open(STATE_FILE + name + '.json', 'w') as f:
         json.dump(state, f, indent=2)
-
-def detect_changes(base_dir):
-    old_state = load_old_state()
-    new_state = scan_directory(base_dir)
-    changed = []
-
-    for path, meta in new_state.items():
-        if path not in old_state or old_state[path] != meta:
-            changed.append(path)
-
-    deleted = [p for p in old_state if p not in new_state]
-    save_state(new_state)
-
-    return changed, deleted
-
-# TODO on first backup save info about files and directories(last_state)
-# TODO when last_state is available, backup only new changes
-# (files new/modified, dirs new, modified dir structure, relocate files, delete relocated files in backup)
 
 if __name__ == "__main__":
     dict_dirs, dict_files = traverse_directory_tree("E:/Ostatní/KAJ/", load_last_state('_dirs'), load_last_state('_files'))
