@@ -27,8 +27,6 @@ def synchronize_dirs_on_level(root, dirs, sdir, last_state, dict_dirs):
         relative_path = str(Path(*Path(os.path.join(root, dir)).parts[len(sdir.parts) - 1:]).as_posix())
         dict_dirs[relative_path] = False
 
-        print(relative_path)
-
         # Strip top directories and replace them with BACKUP_DIR
         new_dir = BACKUP_DIR.joinpath(*Path(os.path.join(root, dir)).parts[len(sdir.parts) - 1:])
         if last_state is None:
@@ -44,7 +42,7 @@ def synchronize_files_on_level(root, files, sdir, last_state, dict_files):
     for file in files:
         path = Path(os.path.join(root, file))
         # Make new record
-        relative_path = str(Path(*path.parts[len(sdir.parts) - 1:]))
+        relative_path = str(Path(*path.parts[len(sdir.parts) - 1:]).as_posix())
         dict_files[relative_path] = get_file_state(path)
 
         # Strip top directories and replace them with BACKUP_DIR
