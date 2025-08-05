@@ -1,5 +1,6 @@
 import time
 import os
+import copy
 
 def fake_stat():
     # Values are usually ints/floats; example values below
