@@ -2,6 +2,8 @@ import os
 import shutil
 from pathlib import Path
 
+from src.tools import STATE_FILE_NAME
+
 def get_file_state(path):
     stat = os.stat(path)
     return {'mtime': stat.st_mtime, 'size': stat.st_size, 'matched': False}
@@ -32,6 +34,8 @@ def synchronize_dirs_on_level(root, bdir, dirs, sdir, last_state, dict_dirs):
 def synchronize_files_on_level(root, bdir, files, sdir, last_state, dict_files):
     # Traverse all files at this level
     for file in files:
+        if file == STATE_FILE_NAME:
+            continue
         path = Path(os.path.join(root, file))
         # Make new record
         relative_path = str(Path(*path.parts[len(sdir.parts) - 1:]).as_posix())
@@ -58,8 +62,8 @@ def traverse_directory_tree(sdir, bdir, last_state_dirs = None, last_state_files
         synchronize_dirs_on_level(root, bdir, dirs, sdir, last_state_dirs, dict_dirs)
         synchronize_files_on_level(root, bdir, files, sdir, last_state_files, dict_files)
 
-    delete_old_files(last_state_files)
-    delete_old_directories(last_state_dirs)
+    delete_old_files(last_state_files, bdir)
+    delete_old_directories(last_state_dirs, bdir)
 
     return dict_dirs, dict_files
 
