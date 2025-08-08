@@ -19,8 +19,20 @@ def sync():
     print('State file was updated')
     print(f"Directory '{src_dir}' was successfully a backuped(just new changes, sync) to directory '{backup_dir}'")
 
-if __name__ == "__main__":
+def new_backup(args):
+    src_dir = check_and_set_src_dir(args.new_backup[0])
+    backup_dir = check_and_set_backup_dir(args.new_backup[1])
 
+    if check_if_src_dir_contains_state_file(src_dir):
+        raise argparse.ArgumentTypeError(f"This directory is already containing state file. Can not perform new backup. Read help.")
+
+    print(f"Performing backup of new directory\n SRC DIR '{src_dir}' \n BACKUP DIR '{backup_dir}'")
+    r_dict_dirs, r_dict_files = traverse_directory_tree(src_dir, backup_dir)
+    save_state(src_dir, backup_dir, r_dict_dirs, r_dict_files)
+    print('State file was created')
+    print(f"Directory '{src_dir}' was successfully backuped to directory '{backup_dir}'")
+
+def main_wrapped():
     parser = argparse.ArgumentParser(
         description="CLI app to backup directories and files",
         epilog='If want to perform backup(just synchronization) of directory which already has state file, call app withou any arguments.'
@@ -39,19 +51,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Check and set args
     if args.new_backup is not None:  
-        src_dir = check_and_set_src_dir(args.new_backup[0])
-        backup_dir = check_and_set_backup_dir(args.new_backup[1])
-
-        if check_if_src_dir_contains_state_file(src_dir):
-            raise argparse.ArgumentTypeError(f"This directory is already containing state file. Can not perform new backup. Read help.")
-
-        print(f"Performing backup of new directory\n SRC DIR '{src_dir}' \n BACKUP DIR '{backup_dir}'")
-        r_dict_dirs, r_dict_files = traverse_directory_tree(src_dir, backup_dir)
-        save_state(src_dir, backup_dir, r_dict_dirs, r_dict_files)
-        print('State file was created')
-        print(f"Directory '{src_dir}' was successfully backuped to directory '{backup_dir}'")
+        new_backup(args)
     else:
         sync()
+
+if __name__ == "__main__":
+    main_wrapped()
+    
 

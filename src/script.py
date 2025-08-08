@@ -2,7 +2,7 @@ import os
 import shutil
 from pathlib import Path
 
-from src.tools import STATE_FILE_NAME
+from tools import STATE_FILE_NAME
 
 def get_file_state(path):
     stat = os.stat(path)
